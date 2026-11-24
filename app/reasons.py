@@ -6,4 +6,6 @@ REASONS = {
     'NO_LOAD': '缺少计划航段装载证据', 'OFFLOADED': '计划航段末态为撤下',
     'WRONG_LEG': '非计划航段末态为装载', 'MULTI_LOADED': '多个航段同时保持装载',
     'UNLISTED': '行李牌未出现在中转清单', 'UNCERTAIN': '存在未决扫描证据',
+    'CLOCK_SPAN': '校时偏差范围跨两个航段', 'CLOCK_FORMAT': '校时记录偏差或时刻无法识别',
+    'CLOCK_NO_SCAN': '校时记录未匹配到采信扫件',
 }

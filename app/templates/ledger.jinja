@@ -2,3 +2,21 @@
 <div class="table-scroll"><table><thead><tr><th>航段</th><th>目的站</th><th>清单</th><th>已装</th><th>待证</th><th>未装</th><th>错装件</th></tr></thead><tbody>
 {% for row in stages.ledger.rows %}<tr><td>{{ row.leg }}</td><td>{{ row.destination }}</td><td class="num">{{ row.manifest }}</td><td class="num">{{ row.loaded }}</td><td class="num">{{ row.pending }}</td><td class="num">{{ row.not_loaded }}</td><td class="num">{{ row.wrong_bags }}</td></tr>{% endfor %}</tbody></table></div>
 <div class="equation"><b>{{ ledger.manifest }}</b><span>清单件</span> = <b>{{ ledger.loaded }}</b><span>已装</span> + <b>{{ ledger.pending }}</b><span>待证</span> + <b>{{ ledger.not_loaded }}</b><span>未装</span></div>
+{% if stages.clock and stages.clock.counts and stages.clock.counts.records %}
+<div class="clock-panel" aria-label="校时修正">
+  <div class="panel-head"><h3>校时关联更新</h3>
+    <span>{{ stages.clock.counts.applied }} 条已修正 · {{ stages.clock.counts.ranged }} 条带偏差范围{% if stages.clock.counts.unmatched %} · {{ stages.clock.counts.unmatched }} 条未匹配{% endif %}</span>
+  </div>
+  <div class="table-scroll"><table><thead><tr><th>校时记录</th><th>扫描号</th><th>行李牌</th><th>原生效 UTC</th><th>校时后 UTC</th><th>归属航段</th><th>判定</th></tr></thead><tbody>
+  {% for item in stages.ledger.clock_applied %}
+    <tr><td>{{ item.clock_id }}</td><td>{{ item.event or '—' }}</td><td>{{ item.tag or '—' }}</td>
+      <td><time datetime="{{ item.effective_original }}">{{ item.effective_original[11:19] }}</time></td>
+      <td><time datetime="{{ item.effective }}">{{ item.effective[11:19] }}</time></td>
+      <td>{{ item.leg or (item.candidates|join(' / ') if item.candidates else '—') }}</td>
+      <td>{% if item.clock_span %}<span class="warn">偏差跨两段 · 先列待证</span>{% elif item.pending %}<span class="warn">航段未决 · 待证</span>{% else %}<span class="ok">已按校时入账</span>{% endif %}</td>
+    </tr>
+  {% endfor %}
+  </tbody></table></div>
+  <p class="empty">校时从原件时刻一次性起算；同份记录重跑不重复修正，航段关联与装撤回放已随之更新。</p>
+</div>
+{% endif %}

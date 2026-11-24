@@ -2,8 +2,9 @@ from collections import Counter, defaultdict
 from .policy import verdict
 
 
-def classify(manifest, states, undecided):
+def classify(manifest, states, undecided, uncertain_tags=None):
     by_tag, issues = defaultdict(dict), defaultdict(list)
+    clock_uncertain = set(uncertain_tags or ())
     for state in states:
         by_tag[state['tag']][state['leg']] = state
     for row in undecided:
@@ -17,9 +18,11 @@ def classify(manifest, states, undecided):
         off_plan = sorted(leg for leg, state in known.items() if planned and leg != planned and state['state'] == 'LOADED')
         for leg in off_plan:
             wrong.append(dict(known[leg], planned=planned, reason='WRONG_LEG'))
-        disputed = issues[tag] or any(state['state'] == 'CONFLICT' for state in known.values())
+        disputed = (bool(issues[tag]) or tag in clock_uncertain
+                    or any(state['state'] == 'CONFLICT' for state in known.values()))
         status, reason = verdict(known.get(planned, {}).get('state'), off_plan, disputed) if row else ('unlisted', 'UNLISTED')
         lines = sorted(set(issues[tag]).union(*(state['source_lines'] for state in known.values())))
         decisions.append(dict(tag=tag, planned=planned, manifest_line=row['line'] if row else None,
-                              status=status, reason=reason, wrong_legs=off_plan, source_lines=lines))
+                              status=status, reason=reason, wrong_legs=off_plan, source_lines=lines,
+                              clock_span=tag in clock_uncertain))
     return dict(rows=decisions, wrong=wrong, counts=dict(Counter(row['status'] for row in decisions)))

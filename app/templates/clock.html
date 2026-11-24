@@ -1,0 +1,22 @@
+<div class="panel-head"><h2>校时记录</h2><span>{% if stages.clock.counts %}{{ stages.clock.counts.records }} 份记录 · {{ stages.clock.counts.applied }} 条已修正{% else %}暂无校时记录{% endif %}</span></div>
+{% if stages.clock_applied %}
+<div class="table-scroll"><table><thead><tr><th>校时记录</th><th>扫描号</th><th>行李牌</th><th>原生效 UTC</th><th>偏差范围 UTC</th><th>校时后 UTC</th><th>航段</th><th>判定</th></tr></thead><tbody>
+{% for item in stages.ledger.clock_applied %}
+<tr><td>{{ item.clock_id }}</td><td>{{ item.event or '—' }}</td><td>{{ item.tag or '—' }}</td>
+<td>{{ item.effective_original[11:19] }}</td>
+<td>{{ item.effective_lo[11:19] }}–{{ item.effective_hi[11:19] }}</td>
+<td>{{ item.effective[11:19] }}</td>
+<td>{{ item.leg or (item.candidates|join(' / ') if item.candidates else '—') }}</td>
+<td>{% if item.clock_span %}<span class="warn">偏差跨两段 · 待证</span>{% elif item.pending %}<span class="warn">未决 · 待证</span>{% else %}<span class="ok">已确认</span>{% endif %}</td></tr>
+{% endfor %}
+</tbody></table></div>
+{% else %}
+<p class="empty">未附带校时记录。可在去向对账页随校时后的航段关联与装撤回放查看更新。</p>
+{% endif %}
+{% if stages.clock.records %}
+<div class="table-scroll"><table><thead><tr><th>记录号</th><th>对象</th><th>偏差起(秒)</th><th>偏差止(秒)</th><th>绝对修正</th></tr></thead><tbody>
+{% for rec in stages.clock.records %}
+<tr><td>{{ rec.id }}</td><td>{{ rec.target_kind or '—' }}:{{ rec.target or '—' }}</td><td class="num">{{ rec.offset_start }}</td><td class="num">{{ rec.offset_end }}</td><td>{{ rec.corrected or rec.corrected_lo or '—' }}</td></tr>
+{% endfor %}
+</tbody></table></div>
+{% endif %}
